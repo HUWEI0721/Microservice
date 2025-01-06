@@ -1,0 +1,9 @@
+server:
+  port: 8081
+sc:
+  db:
+    database: sc-item
+  swagger:
+    title: StoreCloud商城商品服务接口文档
+    description: StoreCloud商城商品服务接口文档
+    package: com.storecloud.item.controller

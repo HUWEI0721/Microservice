@@ -1,0 +1,9 @@
+server:
+  port: 8082
+sc:
+  db:
+    database: sc-cart
+  swagger:
+    title: StoreCloud商城购物车服务接口文档
+    description: StoreCloud商城购物车服务接口文档
+    package: com.storecloud.cart.controller

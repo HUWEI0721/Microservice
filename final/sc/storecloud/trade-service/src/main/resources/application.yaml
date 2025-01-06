@@ -1,0 +1,12 @@
+server:
+  port: 8084
+feign:
+  okhttp:
+    enabled: true
+sc:
+  db:
+    database: sc-trade
+  swagger:
+    title: StoreCloud商城交易服务接口文档
+    description: StoreCloud商城交易服务接口文档
+    package: com.storecloud.trade.controller

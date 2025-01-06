@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>StoreCloud商城</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入现代化CSS框架，如Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .navbar-brand img {
+            height: 50px;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar-large {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-bar-large .form-control {
+            width: 500px;
+            font-size: 1.2rem;
+            border-radius: 30px 0 0 30px;
+            padding: 0 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .brand-list img {
+            max-height: 50px;
+            margin: 10px;
+        }
+
+        .floor-index a {
+            display: block;
+            padding: 10px;
+            color: #fff;
+            background-color: #343a40;
+            margin-bottom: 5px;
+            text-align: center;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .floor-index a:hover {
+            background-color: #495057;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="indexApp">
+        <!-- 头部导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/">
+                <img src="img/logo.png" alt="StoreCloud">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="切换导航">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- 搜索栏 -->
+                <form class="form-inline mx-auto search-bar-large" @submit.prevent="search">
+                    <input class="form-control mr-sm-2" type="search" placeholder="搜索商品" aria-label="搜索"
+                        v-model="key" @input="getSuggestion" @focus="showOption = options.length > 0"
+                        @keydown.down.prevent="highlightNext" @keydown.up.prevent="highlightPrev"
+                        @keydown.enter.prevent="selectHighlighted">
+                    <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">搜索</button>
+                    <!-- 自动补全下拉框 -->
+                    <div v-if="showOption" class="autocomplete-dropdown">
+                        <div v-for="(option, index) in options" :key="index"
+                            :class="['autocomplete-item', { 'bg-light': highlightedIndex === index }]"
+                            @mouseover="highlightedIndex = index" @mousedown.prevent="selectOption(option)">
+                            {{ option }}
+                        </div>
+                    </div>
+                </form>
+                <!-- 热门搜索 -->
+                <div class="hotwords d-none d-lg-block">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="#">StoreCloud首发</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">每满99减30</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">亿元优惠</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">9.9元团购</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">办公用品</a></li>
+                    </ul>
+                </div>
+                <!-- 购物车 -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="/cart.html">
+                            <i class="fas fa-shopping-cart"></i> 我的购物车
+                            <span class="badge badge-pill badge-danger position-absolute" style="top: 0; right: 0;">
+                                {{ carts.length }}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 主导航菜单 -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">服装城</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">美妆馆</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">StoreCloud超市</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">全球购</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">闪购</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">团购</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">有趣</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 轮播图 -->
+        <div id="mainCarousel" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+                <li data-target="#mainCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#mainCarousel" data-slide-to="1"></li>
+                <li data-target="#mainCarousel" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="img/VCG41N1209161962.jpg" class="d-block w-100" alt="第一张轮播图">
+                </div>
+                <div class="carousel-item">
+                    <img src="img/VCG41N1134333331.jpg" class="d-block w-100" alt="第二张轮播图">
+                </div>
+                <div class="carousel-item">
+                    <img src="img/VCG211406213278.jpg" class="d-block w-100" alt="第三张轮播图">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#mainCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">上一张</span>
+            </a>
+            <a class="carousel-control-next" href="#mainCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">下一张</span>
+            </a>
+        </div>
+
+        <!-- 分类列表及楼层 -->
+        <div class="container my-5">
+            <div class="row">
+                <!-- 分类列表 -->
+                <div class="col-md-3">
+                    <h4>家用电器</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item">节能补贴</li>
+                        <li class="list-group-item">4K电视</li>
+                        <li class="list-group-item">空气净化器</li>
+                        <li class="list-group-item">IH电饭煲</li>
+                        <li class="list-group-item">滚筒洗衣机</li>
+                        <li class="list-group-item">电热水器</li>
+                    </ul>
+                    <img src="img/floor-1-1.png" class="img-fluid mt-3" alt="家用电器">
+                </div>
+                <!-- 楼层内容 -->
+                <div class="col-md-9">
+                    <div id="floorCarousel" class="carousel slide" data-ride="carousel">
+                        <ol class="carousel-indicators">
+                            <li data-target="#floorCarousel" data-slide-to="0" class="active"></li>
+                            <li data-target="#floorCarousel" data-slide-to="1"></li>
+                            <li data-target="#floorCarousel" data-slide-to="2"></li>
+                        </ol>
+                        <div class="carousel-inner">
+                            <div class="carousel-item active" style="width: 60%;">
+                                <img src="img/floor-1-b01.png" class="d-block w-100" alt="楼层轮播图1">
+                            </div>
+                            <div class="carousel-item" style="width: 60%;">
+                                <img src="img/floor-1-b02.png" class="d-block w-100" alt="楼层轮播图2">
+                            </div>
+                            <div class="carousel-item" style="width: 60%;">
+                                <img src="img/floor-1-b03.png" class="d-block w-100" alt="楼层轮播图3">
+                            </div>
+                        </div>
+                        <a class="carousel-control-prev" href="#floorCarousel" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">上一张</span>
+                        </a>
+                        <a class="carousel-control-next" href="#floorCarousel" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">下一张</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 品牌展示 -->
+        <section class="brand bg-light py-5">
+            <div class="container">
+                <h5 class="text-center mb-4">品牌专区</h5>
+                <div class="d-flex flex-wrap justify-content-center brand-list">
+                    <img src="img/brand_21.png" alt="品牌1">
+                    <img src="img/brand_03.png" alt="品牌2">
+                    <img src="img/brand_05.png" alt="品牌3">
+                    <img src="img/brand_07.png" alt="品牌4">
+                    <img src="img/brand_09.png" alt="品牌5">
+                    <img src="img/brand_11.png" alt="品牌6">
+                    <img src="img/brand_13.png" alt="品牌7">
+                    <img src="img/brand_15.png" alt="品牌8">
+                    <img src="img/brand_17.png" alt="品牌9">
+                    <img src="img/brand_19.png" alt="品牌10">
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="bg-dark text-white py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>&copy; 2024 StoreCloud商城. 版权所有.</p>
+                    </div>
+                    <div class="col-md-6 text-md-right">
+                        <a href="#" class="text-white mr-3">关于我们</a>
+                        <a href="#" class="text-white mr-3">联系我们</a>
+                        <a href="#" class="text-white">帮助中心</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- 楼层导航 -->
+        <div class="floor-index fixed-bottom d-none d-md-block">
+            <ul class="list-unstyled d-flex justify-content-center mb-3">
+                <li class="mx-2">
+                    <a href="#floor-1">1F<br>家用电器</a>
+                </li>
+                <li class="mx-2">
+                    <a href="#floor-2">2F<br>手机通讯</a>
+                </li>
+                <li class="mx-2">
+                    <a href="#floor-3">3F<br>电脑办公</a>
+                </li>
+                <li class="mx-2">
+                    <a href="#floor-4">4F<br>家居家具</a>
+                </li>
+                <li class="mx-2">
+                    <a href="#floor-5">5F<br>运动户外</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 引入必要的JS库 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- 引入字体图标 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <!-- Vue实例 -->
+    <script>
+        new Vue({
+            el: '#indexApp',
+            data: {
+                key: '',
+                showOption: false,
+                options: [],
+                highlightedIndex: -1,
+                carts: []
+            },
+            created() {
+                this.key = this.getUrlParam("key") || '';
+                this.fetchCarts();
+            },
+            methods: {
+                getUrlParam(name) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    return urlParams.get(name);
+                },
+                fetchCarts() {
+                    if (this.isLogin()) {
+                        axios.get("/carts")
+                            .then(response => {
+                                this.carts = response.data;
+                            })
+                            .catch(error => {
+                                console.error(error);
+                                this.carts = [];
+                            });
+                    }
+                },
+                isLogin() {
+                    // 这里应根据实际情况判断用户是否登录
+                    return true;
+                },
+                getSuggestion() {
+                    if (this.key.trim() === '') {
+                        this.options = [];
+                        this.showOption = false;
+                        return;
+                    }
+                    axios.get(`/search/suggestion?key=${this.key}`)
+                        .then(response => {
+                            this.options = response.data;
+                            this.showOption = this.options.length > 0;
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            this.options = [];
+                            this.showOption = false;
+                        });
+                },
+                search() {
+                    if (this.key.trim() !== '') {
+                        window.location.href = `/search.html?key=${encodeURIComponent(this.key)}`;
+                    }
+                },
+                selectOption(option) {
+                    this.key = option;
+                    this.showOption = false;
+                    this.options = [];
+                    this.search();
+                },
+                highlightNext() {
+                    if (this.highlightedIndex < this.options.length - 1) {
+                        this.highlightedIndex++;
+                    }
+                },
+                highlightPrev() {
+                    if (this.highlightedIndex > 0) {
+                        this.highlightedIndex--;
+                    }
+                },
+                selectHighlighted() {
+                    if (this.highlightedIndex >= 0 && this.highlightedIndex < this.options.length) {
+                        this.selectOption(this.options[this.highlightedIndex]);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

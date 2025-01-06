@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ com.storecloud.common.config.MyBatisConfig,\
+ com.storecloud.common.config.JsonConfig,\
+ com.storecloud.common.config.MvcConfig,\
+ com.storecloud.common.config.MqConfig
